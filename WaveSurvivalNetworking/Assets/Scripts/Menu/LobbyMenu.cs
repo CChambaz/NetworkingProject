@@ -24,18 +24,18 @@ public class LobbyMenu : MonoBehaviour {
         customDiscovery = FindObjectOfType<CustomDiscovery>();
         networkManager = FindObjectOfType<CustomNetworkManager>();
 
-        // S'assure que l'utilisateur n'a pas de client actif
+        // Make sure that no client is currently active
         if (networkManager.client != null)
             networkManager.StopClient();
 
-        // S'assure que le curseur est visible et utilisable
+        // Make sure that the cursor is visible dans usable
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
     }
 	
 	// Update is called once per frame
 	void Update () {
-        // S'assure que l'écoute de broadcast est active
+        // Make sure that the customDiscovery is listening to broadcast
         if (!customDiscovery.running)
             customDiscovery.StartAsClient();
 	}
@@ -44,57 +44,56 @@ public class LobbyMenu : MonoBehaviour {
     {
         Debug.Log("Updating game list...");
 
-        // Détruit chaque entrées précedemment crées
+        // Destroy every active entries
         foreach(GameObject entrie in gameEntries)
         {
             Destroy(entrie);
         }
 
-        // Retire toutes les entrées de la liste
+        // Clean the gameEntries list
         gameEntries.Clear();
 
-        // Récupère toutes les parties découverte par le composant customDiscovery
+        // Get all the games discovers by the listening of broadcast
         var keys = new List<CustomNetworkManager.GameInfo>(customDiscovery.activeGames.Keys);
-
-        // Compteur utilisé pour espacé les entrées l'une des autres
+        
+        // Counter used to separate each entries
         int cpt = 0;
 
         foreach (var key in keys)
         {
-            // Crée une entrée
+            // Creat an entrie
             GameObject newEntrie = Instantiate(gameEntriesPrefab);
 
-            // Récupère le composant GameEntrie
             GameEntrie entrie = newEntrie.GetComponent<GameEntrie>();
             
-            // Assigne les valeurs correspondantes à la clé active
+            // Assign the values of the actual key to the entrie
             entrie.gameName = key.gameName;
             entrie.gameIP = key.gameIP;
             entrie.gamePort = key.gamePort;
 
-            // Défini le parent de la nouvelle entrée
+            // Define the parent of the new entrie
             newEntrie.transform.SetParent(entriesList.transform);            
-
-            // Défini la position de l'entrée selon le nombre d'entrée éxistante
+            
+            // Define the position of the entrie depending on how many entries allready exists
             Vector3 entriePosition = new Vector3(0, (baseEntrieModal.GetComponent<RectTransform>().rect.size.y / 4) * cpt, 0);
             
-            // Ajuste la taille de l'entrée
+            // Adjust the size of the entry
             newEntrie.GetComponent<RectTransform>().localScale = baseEntrieModal.GetComponent<RectTransform>().localScale;
 
-            // Applique la position de l'entrée
+            // Apply the position to the entry
             newEntrie.GetComponent<Transform>().position = baseEntrieModal.GetComponent<Transform>().position - entriePosition;
 
-            // Ajoute l'entrée à la liste des entrées
+            // Add the entry to the entries list
             gameEntries.Add(newEntrie);
 
-            // Incrémente le compteur
+            // Increments the counter
             cpt++;
         }
     }
 
     public void CreatGame()
     {
-        // Vérifie qu'un nom de partie à bien été entré avant de crée une partie
+        // Check if a game name has been entered before starting a new game
         if (textHostGameName.text != "")
             FindObjectOfType<CustomNetworkManager>().StartHosting(textHostGameName.text);
         else
@@ -103,7 +102,7 @@ public class LobbyMenu : MonoBehaviour {
 
     public void JoinGameByIP()
     {
-        // Vérifie qu'une adresse IP au format valide a été entrée avant de rejoindre la partie correspondante
+        // Check if a valid IP address has been entered before joining the game
         if (Regex.Match(textIPAdress.text, "[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}").Success)
             FindObjectOfType<CustomNetworkManager>().StartClient(textIPAdress.text, FindObjectOfType<CustomNetworkManager>().networkPort);
         else
@@ -112,7 +111,7 @@ public class LobbyMenu : MonoBehaviour {
 
     public void DisplayMessage(string message)
     {
-        // Affiche le message transmis dans la zone dédiée
+        // Show the message in the dedicated space
         messageBox.text = message + "\n" + messageBox.text;
     }
 }

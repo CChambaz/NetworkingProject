@@ -25,7 +25,7 @@ public class HealthValues : NetworkBehaviour
     {
         isAlive = alive;
 
-        // Détermine l'action à entreprendre selon la valeur transmise
+        // Determine what to do
         if (isAlive)
             GetComponent<Player>().PlayerRespawn();
         else

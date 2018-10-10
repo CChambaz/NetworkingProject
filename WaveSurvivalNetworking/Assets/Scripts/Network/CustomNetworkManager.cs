@@ -27,18 +27,17 @@ public class CustomNetworkManager : NetworkManager
     }
 
     #region Host Management
-    // Lance la partie
     public void StartHosting(string gameName)
     {
-        // Récupère les informations qui vont être envoyées sur le réseau
+        // Set the datas that will be send on the network
         gameInfo.gameName = gameName;
         gameInfo.gameIP = Network.player.ipAddress;
         gameInfo.gamePort = singleton.networkPort;
         
-        // Lance la partie
+        // Launch the game
         singleton.StartHost();
 
-        // Indique que l'utilisateur est l'hôte de la partie
+        // Set the host status
         isHost = true;
     }
 
@@ -46,11 +45,11 @@ public class CustomNetworkManager : NetworkManager
     {
         base.OnStartHost();
 
-        // Prépare les données a propager sur le réseau
-        // Format : [Nom de la partie]|[Adresse IP]|[Port utilisé]
+        // Prepare the datas
+        // Format : [game name]|[IP address]|[Port in use]
         string data = gameInfo.gameName + "|"  + gameInfo.gameIP + "|" + gameInfo.gamePort.ToString();
 
-        // Lance le broadcast
+        // Start broadcasting the data on the network
         networkDiscovery.ServerBroadcast(data);
     }
 
@@ -60,11 +59,20 @@ public class CustomNetworkManager : NetworkManager
 
         Debug.Log("New client connected, total : " + numPlayers + "/" + maxConnections);
 
-        // Si le nombre maximum de joueur est atteints, arrête le boradcast
-        if (numPlayers == maxPlayer)
+        // Check if the maximum amount of players is reached
+        if (numPlayers >= maxPlayer)
             networkDiscovery.StopBroadcast();
+        // If not, check if the broadcast is stopped
+        else if (!networkDiscovery.running)
+        {
+            // Prepare the datas
+            string data = gameInfo.gameName + "|" + gameInfo.gameIP + "|" + gameInfo.gamePort.ToString();
 
-        // Déconnecte les joueur se connectant alors que le maximum de connexion est atteint
+            // Start broadcasting
+            networkDiscovery.ServerBroadcast(data);
+        }
+
+        // Disconnect the incoming player if the maximum amount of player is reached
         if (numPlayers > maxPlayer)
             conn.Disconnect();
     }
@@ -78,10 +86,10 @@ public class CustomNetworkManager : NetworkManager
     {
         base.OnStopHost();
 
-        // Retire le statut d'hôte
+        // Unset the host status
         isHost = false;
 
-        // Réinitialise le broadcast et écoute le réseau
+        // Restart listening for broadcast
         networkDiscovery.ClientBroadcast();
     }
     #endregion 
@@ -89,28 +97,28 @@ public class CustomNetworkManager : NetworkManager
     #region Client Management    
     public void StartClient(string ip, int port)
     {
-        // Démarre le client et le connecte au serveur
+        // Start the client and connect it to the server
         singleton.StartClient();
         singleton.client.Connect(ip, port);
 
-        // Arrête l'écoute de broadcast
+        // Stop listening for broadcast
         networkDiscovery.StopBroadcast();
     }
 
     public void LeaveGame()
     {
-        // Si il s'agit de l'hôte, l'arrète
+        // If it's the host, stop the game
         if (isHost)
         {
             StopHosting();
             return;
         }
        
-        // Déconnecte et arrête le client
+        // Disconnect and stop the client
         singleton.client.Disconnect();
         singleton.StopClient();
 
-        // Reprend l'écoute de broadcast
+        // Restart listening for broadcast
         networkDiscovery.ClientBroadcast();
     }
     #endregion

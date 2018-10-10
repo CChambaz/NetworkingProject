@@ -32,104 +32,102 @@ public class Mobs : NetworkBehaviour
 
         navigationAgent = GetComponent<NavMeshAgent>();
 
-        // Prépare le positionement de l'ennemi
+        // Prepare the initial position
         NavMeshHit closestHit;
 
-        // Récupère la hauteur de l'ennemi
+        // Get the height of the agent
         Vector3 mobHeight = new Vector3(0, navigationAgent.height, 0);
 
-        // Détermine et récupère la position valide la plus proche sur le Navmesh 
+        // Get the nearest valid position on the NavMesh
         if (NavMesh.SamplePosition(transform.position, out closestHit, 20, NavMesh.AllAreas))
-            // Défini la position initial de l'ennemi
+            // Define the initial position
             transform.position = closestHit.position + mobHeight;
 
-        // Activation de l'agent de navigation
+        // Enabled the navigation agent
         navigationAgent.enabled = true;
 
-        // Défini la cible de base
+        // Define the base target
         if (isServer)
             SetDestination();
     }
 
     // Update is called once per frame
     void Update() {
-        // Si la cible a changée
+        // If the target has changed
         if (previousTargetID != targetID)
-            // Met à jour la cible
+            // Update the target
             UpdateDestinationTransform();
 
-        // Si la cible existe
+        // If the target exists
         if (targetTransform != null)
-            // Défini la déstination
+            // Difine the destination
             navigationAgent.SetDestination(targetTransform.position);
 
         if (!isServer)
             return;
 
-        // Incrémente le compteur de l'attaque
         hasNotAttackSince += Time.deltaTime;
 
-        // Vérifie que le mob peut attaquer et que la cible éxiste
+        // Check if it can attack and if the target exists
         if (hasNotAttackSince > attackCoolDown && targetTransform != null)
             Attack();
 
-        // Vérifie qu'aucun joueur n'est plus près que le joueur actuellement pris pour cible
+        // Check if there is any other closer player  
         SetDestination();
     }
 
     [Server]
     void Attack()
     {
-        // Vérifie que le mob est à porté de sa cible
+        // Check if it is at range
         if (Vector3.Distance(transform.position, targetTransform.position) > attackRange)
             return;
 
-        // Réinitialise le timer de l'attque
         hasNotAttackSince = 0;
 
-        // Récupère le compsant Health de la cible
+        // Get the health component of the target
         Health target = targetTransform.GetComponent<Health>();
 
-        // Si ce composant éxiste
+        // If the component exist
         if (target != null)
-            // Lui inflige des dégats
+            // Deal damage
             target.TakeDamage(attackDamage);
     }
 
     [Server]
     public void Die()
     {
-        // Ajoute les points correspondant au score globale
+        // Add points to the global score
         scoreManager.AddPoints(pointValue);
-
-        // Retire l'ennemis de la liste globale des ennemis actifs 
+        
+        // Remove the enemies form the active enemies list
         spawnManager.mobsActive.Remove(gameObject.GetInstanceID());
 
-        // Détruit l'ennemi
+        // Destroy the object accros the network
         NetworkServer.Destroy(gameObject);
     }
 
     void SetDestination()
     {
-        // Passe sur tout les joueurs de la liste globale des joueurs
+        // Check every player
         for(int i = 0; i < waveValues.players.Count; i++)
         {
-            // Récupère le transform du joueur
+            // Get the player transform
             Transform playerTransform = waveValues.players[i].playerNetID.transform;
 
-            // Vérifie qu'une cible est assigné
+            // Check if a target is assigned
             if (targetTransform != null)
             {
-                // Si la distance entre l'ennemi et la cible est plus grande que la distance entre l'ennemi et le joueur
+                // Check if the distance beetween the enemie and the player is smaller than the distance beetween the enemies and the actual target
                 if (Vector3.Distance(transform.position, targetTransform.position) > Vector3.Distance(transform.position, playerTransform.position))
                 {
-                    // Définit la nouvelle cible
+                    // Define the new target
                     targetID = waveValues.players[i].playerNetID.netId.Value;
                 }
             }
             else
             {
-                // Assigne la cible initiale
+                // Assign base target
                 targetID = waveValues.players[i].playerNetID.netId.Value;
             }
         }
@@ -137,24 +135,24 @@ public class Mobs : NetworkBehaviour
 
     void UpdateDestinationTransform()
     {
-        // Défini l'ID réseau de l'objet recherché
+        // Define the NetID of the searched object
         NetworkInstanceId netInstanceId = new NetworkInstanceId(targetID);
 
-        // Prépare l'identité réseau trouvée
+        // Prepare the NetID found
         NetworkIdentity foundNetworkIdentity = null;
 
-        // Défini si il s'agit du serveur ou d'un client puis cherche et récupère l'objet désiré
+        // Define if it is a client or a server and search the object
         if (isServer)
             NetworkServer.objects.TryGetValue(netInstanceId, out foundNetworkIdentity);
         else
             ClientScene.objects.TryGetValue(netInstanceId, out foundNetworkIdentity);
 
-        // Si la recherche est concluante
+        // If the search found something
         if (foundNetworkIdentity)
-            // Récupère le transform de l'objet trouvé
+            // Get the transform of the target
             targetTransform = foundNetworkIdentity.GetComponent<Transform>();
 
-        // Actualise la cible précédente à la cible actuel
+        // Actualise the previous target to the current
         previousTargetID = targetID;
     }
 
