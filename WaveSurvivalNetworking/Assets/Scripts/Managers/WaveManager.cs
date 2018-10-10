@@ -35,14 +35,14 @@ public class WaveManager : NetworkBehaviour
     [Server]
 	void Update ()
     {
-        // Vérifie qu'il n'y a pas de vague active et que la partie n'est pas terminée
+        // Check if a wave is actually running and that the game is not over
         if (!waveValues.isWaveActive && waveValues.gameStatus == -1)
         {
             timeWaitedForNextWave += Time.deltaTime;
-
-            // Si le temps écoulé depuis la précédente vague est suffisant
+            
+            // If the time passed since the end of the last wave is enough
             if(timeWaitedForNextWave >= timeBetweenWaves)
-                // Lance la vague suivante
+                // Start the next wave
                 StartWave();
         }
 	}
@@ -50,39 +50,38 @@ public class WaveManager : NetworkBehaviour
     [Server]
     void StartWave()
     {
-        // Incrémente le numéro de vague
         waveValues.waveNumber++;
 
-        // Défini qu'une vague est en cours
+        // Define that a wave is in progress
         waveValues.isWaveActive = true;
-
-        // Lance la coroutine de spawn avec le nombre d'ennemis à spawn
+        
+        // Start the spawn coroutine with the amount of enemies to spawn
         StartCoroutine(spawnManager.StartSpawn(mobToSpawn));
     }
 
     [Server]
     public void EndWave()
     {
-        // Prépare le timer pour l'attente de la prochaine vague
         timeWaitedForNextWave = 0;
 
-        // Défini qu'aucune vague n'est active
+        // Define that no wave is in progress
         waveValues.isWaveActive = false;
 
-        // Détermine le nombre d'ennemis à spawner lors de la vague suivante
+        // Define the number of enemies to spawn on the next wave
         mobToSpawn = (int)(mobToSpawn * mobMultiplier);
         
-        // Check si tout les joueurs sont en vie
+        // Check if all the player are alive
         foreach(WaveValues.PlayerInfo player in waveValues.players)
         {
-            // Si le joueur n'est pas en vie
+            // If not alive
             if (!player.playerNetID.GetComponent<HealthValues>().isAlive)
-                // Défini qu'il l'est, lançant son respawn
+                // Define that he is, starting his respawn
                 player.playerNetID.GetComponent<HealthValues>().isAlive = true;
         }
 
-        // Vérifie s'il s'agit de la dernière manche et assigne le statut victoire si c'est le cas
+        // Check if it was the last wave
         if (waveValues.waveNumber == waveToSurvive)
+            // Define the victory status to the game
             waveValues.gameStatus = 1;
     }
 }

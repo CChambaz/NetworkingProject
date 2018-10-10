@@ -105,7 +105,7 @@ public class UI : NetworkBehaviour
 
         uiWave.text = "Wave " + waveValues.waveNumber.ToString();
 
-        // Effectue un fade continue entre les manches
+        // Fade the wave part of the UI beetween waves
         if (!waveValues.isWaveActive)
         {
             if (uiWave.canvasRenderer.GetAlpha() <= minOpacity)
@@ -138,7 +138,7 @@ public class UI : NetworkBehaviour
 
         uiAmmo.text = playerGun.magazineState + "/" + playerGun.magazineCapacity;
 
-        // Effectue un fade continue des munitions pendant le rechargement
+        // Fade ammo part of the UI when reloading
         if (playerGun.isReloading)
         {
             if (uiAmmo.canvasRenderer.GetAlpha() <= minOpacity)
@@ -155,7 +155,7 @@ public class UI : NetworkBehaviour
         if (scoreValues == null)
             scoreValues = FindObjectOfType<ScoreValues>();
 
-        // Applique le text du score selon le nombre de point et applique l'éxcedent si besoin
+        // Apply score text and exceeding score if necessary
         if(scoreValues.exceedingScore == 0)
             uiCommonScoreText.text = scoreValues.actualScore + "/" + scoreValues.scoreNeeded;
         else

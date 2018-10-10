@@ -16,14 +16,14 @@ public class Area : NetworkBehaviour {
     [Server]
     private void OnTriggerStay(Collider other)
     {
-        // Du moment ou un joueur se trouve dans la zone
+        // While a player is in the area
         if(other.tag == "Player")
         {
-            // Active les spawns qui lui sont attribués
+            // Set active the spawn of this area
             foreach (Spawners spawn in dedicatedSpawn)
                 spawn.isActive = true;
 
-            // Ajoute le joueur dans la liste des joueurs présent dans la zone si il ne s'y trouve pas déjà
+            // Add the player to the list of the player actually in the area if he's not already registered
             if(!playersInArea.Contains(other.gameObject))
                 playersInArea.Add(other.gameObject);
         }
@@ -32,14 +32,14 @@ public class Area : NetworkBehaviour {
     [Server]
     private void OnTriggerExit(Collider other)
     {
-        // Du moment ou un joueur quitte la zone
+        // When a player leave the area
         if (other.tag == "Player")
         {
-            // Retire le joueur de la liste des joueurs actuellement dans la zone
+            // Remove the player from the list of the player actually in the area
             if (playersInArea.Contains(other.gameObject))
                 playersInArea.Remove(other.gameObject);
 
-            // Si il s'agissait du dernier joueur sur place, désactive les spawns associés
+            // If it was the last, disable the spawn of this area
             if (playersInArea.Count == 0)
             {
                 foreach (Spawners spawn in dedicatedSpawn)

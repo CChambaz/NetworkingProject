@@ -23,7 +23,7 @@ public class Interactible : NetworkBehaviour {
     {
         if (scoreValues != null)
         {
-            // Active ou désactive le signe de l'object avec lequel les joueurs peuvent intéragir si ils ont atteint le score nécessaire
+            // Enable or disable the object sign if they have reached the score needed
             if (scoreValues.scoreNeeded == scoreValues.actualScore)
                 ActiveSign(true);
             else if (scoreValues.scoreNeeded > scoreValues.actualScore)
@@ -37,11 +37,11 @@ public class Interactible : NetworkBehaviour {
 
     void ActiveSign(bool isActive)
     {
-        // Active ou désactive les colliders utilisés pour définir si un joueur se trouve a porté d'un objet interactif
+        // Enable or disable the colliders used to define if the player is near an interactible object
         foreach(Collider col in collider)
             col.enabled = isActive;
         
-        // Modifie l'ascpect des objets concernés
+        // Modifie the aspect of the concerned objects
         foreach(MeshRenderer mesh in objectsComposing)
         {
             if (isActive)

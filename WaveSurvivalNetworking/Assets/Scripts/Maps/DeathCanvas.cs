@@ -21,22 +21,21 @@ public class DeathCanvas : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        // Vérifie si la camera utilisé est la caméra montrant cet élément
+        // Check if the active camera is the camera of this canvas
         if (Camera.current == deathCanvas.worldCamera)
         {
-            // Active le curseur 
+            // Enable the cursor
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
 
-            Debug.Log("Is death");
-
-            // Active ou désactive le menu de la mort si la touche escape est utilisée
+            // Enable or disable the death menu
             if (Input.GetKeyUp(KeyCode.Escape))
             {
                 Debug.Log("Activate death menu");
                 deathMenuPanel.SetActive(!deathMenuPanel.activeSelf);
             }
 
+            // Update the mobs and player alive left texts
             deathMobLeft.text = "Mobs left : " + waveValues.mobsLeft.ToString();
             playerStillAlive.text = "Player alive : " + waveValues.playerAlive.ToString();
         }

@@ -30,13 +30,17 @@ public class EndGameCanvas : MonoBehaviour {
 	void Update () {
         if (waveValues != null)
         {
+            // Check if the game is over
             if (waveValues.gameStatus != -1)
             {
+                // Define on which camera the canvas have to be rendered
                 endCanvas.worldCamera = Camera.current;
 
+                // Fade in of the panel and its children
                 if (endPanel.alpha < 1)
                     endPanel.alpha += fadeSpeed;
 
+                // Set the message to show
                 switch (waveValues.gameStatus)
                 {
                     case 1:
@@ -49,8 +53,10 @@ public class EndGameCanvas : MonoBehaviour {
 
                 waittingTime += Time.deltaTime;
 
+                // Check if the time passed on this screen has reached his end
                 if (waittingTime >= waitBeforeLeaving)
                 {
+                    // Leave the game
                     FindObjectOfType<CustomNetworkManager>().LeaveGame();
                     Destroy(this);
                 }
@@ -58,33 +64,5 @@ public class EndGameCanvas : MonoBehaviour {
         }
         else
             waveValues = FindObjectOfType<WaveValues>();
-    }
-
-    void FadeUIEllements()
-    {
-        endPanel.alpha += fadeSpeed;
-    }
-
-    void EndGame()
-    {
-        endCanvas.worldCamera = Camera.current;
-
-        switch(waveValues.gameStatus)
-        {
-            case 1:
-                endMessage.text = winMessage;
-                break;
-            case 0:
-                endMessage.text = loseMessage;
-                break;
-        }
-
-        waittingTime += Time.deltaTime;
-
-        if (waittingTime >= waitBeforeLeaving)
-        {
-            FindObjectOfType<CustomNetworkManager>().LeaveGame();
-            Destroy(this);
-        }
     }
 }

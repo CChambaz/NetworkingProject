@@ -20,23 +20,23 @@ public class PlayerAction : NetworkBehaviour {
 	void Update () {
         RaycastHit hit;
 
-        // Prépare le raycast
+        // Prepare raycast
         Ray ray = new Ray(transform.position, transform.forward);
 
-        // Effectu le raycast et récupère l'objet rencontré
+        // Do the raycast and get the object hitted
         if (Physics.Raycast(ray, out hit, interactibleRange))
         {
-            // Récupère le composant Interactible
+            // Try to get the Interactible component
             Interactible hitted = hit.transform.GetComponent<Interactible>();
 
-            // Si il existe, récupère l'objet
+            // If it exists, get the object
             if (hitted != null)
                 actionableObject = hitted;
         }
         else
             actionableObject = null;
 
-        // Effectu l'action de l'objet interactif
+        // Do the action of the interactible object
         if (Input.GetKeyDown(KeyCode.E) && actionableObject != null && scoreValues.actualScore >= scoreValues.scoreNeeded)
         {
             CmdAction();
@@ -46,7 +46,7 @@ public class PlayerAction : NetworkBehaviour {
 	}
 
     [Command]
-    // Envoi la commande au serveur pour effectuer l'action de l'objet interactif
+    // Send command to the server to do the interactible object action
     void CmdAction()
     {
         actionableObject.Action();

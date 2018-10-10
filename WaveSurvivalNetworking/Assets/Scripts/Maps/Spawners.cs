@@ -18,13 +18,13 @@ public class Spawners : NetworkBehaviour
     [Server]
     public int Spawn(int mobID)
     {
-        // Prépare le spawn de l'ennemis selon l'ID transmis
+        // Prepare the spawn of the enemie
         GameObject mob = Instantiate(mobsArray[mobID], transform.position, transform.rotation);
 
-        // Spawn l'ennemis sur tout le résaux
+        // Spawn the enemie over the network
         NetworkServer.Spawn(mob);
 
-        // Retourne l'ID de l'ennemis
+        // Return the ID of the enemie
         return mob.GetInstanceID();
     }
 }

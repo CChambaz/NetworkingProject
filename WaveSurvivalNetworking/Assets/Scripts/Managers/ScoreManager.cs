@@ -33,7 +33,7 @@ public class ScoreManager : NetworkBehaviour
     [Server]
     public void RemovePoints(int points)
     {
-        // Retire les points au score éxcédentaire si applicable
+        // Remove points from the exceeding if possible
         if (scoreValues.exceedingScore > 0)
         {
             scoreValues.exceedingScore -= points;
@@ -53,23 +53,23 @@ public class ScoreManager : NetworkBehaviour
     [Server]
     public void NextScoreLevel()
     {
-        // Applique le score éxcedentaire en lieu et place au score actuel
+        // Apply the exceeding score to the actual score
         scoreValues.actualScore = scoreValues.exceedingScore;
 
-        // Détermine le prochain pallier nécessaire
+        // Define the next cap
         scoreValues.scoreNeeded = (int)(scoreValues.scoreNeeded * scoreMultiplier);
 
-        // Vérifie si le score actuel est supérieur au score nécessaire
+        // Check if the actual score is greater than the score needed
         if(scoreValues.actualScore > scoreValues.scoreNeeded)
         {
-            // Détermine et applique le score éxcédentaire
+            // Define and apply the exceeding score
             scoreValues.exceedingScore = scoreValues.actualScore - scoreValues.scoreNeeded;
 
-            // Défini le score actuel au maximum
+            // Define the actual score to his maximum
             scoreValues.actualScore = scoreValues.scoreNeeded;
         }
         else
-            // Réinitialise le score éxcédentaire
+            // Set the exceeding score to 0
             scoreValues.exceedingScore = 0;
     }
 }

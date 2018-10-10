@@ -20,10 +20,9 @@ public class Player : NetworkBehaviour
     void Start () {
         Debug.Log("Player initialized...");
 
-        // Récupère la caméra passive
+        // Get the default camera
         defaultCamera = Camera.main.gameObject;
 
-        // Active le joueur
         EnablePlayer();
 
         waveValues = FindObjectOfType<WaveValues>();
@@ -31,96 +30,91 @@ public class Player : NetworkBehaviour
         if (!isServer)
             return;
 
-        // Ajoute le joueur à la liste globale des joueurs
+        // Add the player to the global player list
         AddPlayer();
 
-        // Indique qu'un joueur vivant supplémentaire est présent
+        // Add a player to the player alive count
         waveValues.playerAlive++;
 	}
 
     void DisablePlayer()
     {
-        // Active la caméra passive si c'est le joueur locale
+        // Set active the default camera if it is the local player
         if (isLocalPlayer)
             defaultCamera.SetActive(true);
 
-        // Désactive les éléments partagés
+        // Disable the shared elements
         OnToogleShared.Invoke(false);
 
-        // Si c'est le joueur local
         if (isLocalPlayer)
-            // Désactive les éléments locaux
+            // Disable the local elements
             OnToogleLocal.Invoke(false);
         else
-            // Désactive les éléments vu par les autres clients
+            // Disable the remote elements
             OnToogleRemote.Invoke(false);
     }
 
     void EnablePlayer()
     {
-        // Désactive la caméra passive si c'est le joueur locale
+        // Disable the default camera if it is the local player
         if (isLocalPlayer)
             defaultCamera.SetActive(false);
 
-        // Active les éléments partagés
+        // Enable the shared elements
         OnToogleShared.Invoke(true);
-
-        // Si c'est le joueur local
+        
         if (isLocalPlayer)
-            // Active les éléments locaux
+            // Enable the local elements
             OnToogleLocal.Invoke(true);
         else
-            // Active les éléments vu par les autres clients
+            // enable the remote elements
             OnToogleRemote.Invoke(true);
     }
 
     void AddPlayer()
     {
-        // Récupère l'objet contenant la liste globale des joueurs
         WaveValues waveValues = FindObjectOfType<WaveValues>();
 
-        // Prépare l'ajout du joueur à la liste
+        // Prepare the addition of the player
         WaveValues.PlayerInfo thisPlayer = new WaveValues.PlayerInfo();
 
-        // Ajoute l'ID réseau du joueur à ses informations
+        // Add the NetID to the information of the player
         thisPlayer.playerNetID = GetComponent<NetworkIdentity>();
 
-        // Si l'objet éxiste
         if (waveValues != null)
-            // Ajoute le joueur à la liste globale des joueurs
+            // Add the player to the global list of the players
             waveValues.AddPlayer(thisPlayer);
         else
-            // Retente d'ajouter le joueur
+            // Retry to add the player
             AddPlayer();
     }
 
     public void PlayerDie()
     {
-        // Désactive le joueur
+        // Disable the player
         DisablePlayer();
 
-        // Indique qu'il y a un joueur vivant en moins
+        // Remove the player of the player alive count
         waveValues.playerAlive--;
 
-        // Déplace le joueur à la zone de mort
+        // Move the player to the deadzone
         transform.position = GameObject.FindGameObjectWithTag("Finish").transform.position;
     }
 
     public void PlayerRespawn()
     {
-        // Récupère le composant HealthValues du joueur
         HealthValues healthValues = GetComponent<HealthValues>();
 
-        // Reset son nombre de points de vie au maximum
+        // Reset the amount of health to his maximum
         healthValues.actualHealth = healthValues.maxHealth;
 
-        // Indique qu'un joueur supplémentaire est vivant
+        // Add the player to the player alive count
         waveValues.playerAlive++;
 
-        // Déplace le joueur à un point de respawn
+        // Move the player to the respawn position
         transform.position = GameObject.FindGameObjectWithTag("Respawn").transform.position;
 
-        // Active le joueur
+        // Enable the player
         EnablePlayer();
     }
 
@@ -131,8 +125,13 @@ public class Player : NetworkBehaviour
         WaveValues waveValues = FindObjectOfType<WaveValues>();
         NetworkIdentity networkIdentity = GetComponent<NetworkIdentity>();
 
-        // Retire les informations concernant le joueur
+        // Remove the information of the player
         if (waveValues != null && networkIdentity != null)
+        {
             waveValues.RemovePlayer(networkIdentity);
+
+            if (GetComponent<HealthValues>().isAlive)
+                waveValues.playerAlive--;
+        }
     }
 }

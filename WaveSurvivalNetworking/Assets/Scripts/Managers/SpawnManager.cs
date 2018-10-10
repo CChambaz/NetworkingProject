@@ -25,7 +25,7 @@ public class SpawnManager : NetworkBehaviour
         waveManager = FindObjectOfType<WaveManager>();
         waveValues = FindObjectOfType<WaveValues>();
 
-        // Récupère tout les spawns d'ennemis de la carte
+        // Get all the enemies spawn on the map
         foreach (Spawners spawn in FindObjectsOfType<Spawners>())
             spawners.Add(spawn);
 	}
@@ -42,58 +42,58 @@ public class SpawnManager : NetworkBehaviour
     [Server]
     public IEnumerator StartSpawn(int mobNumber)
     {
-        // Récupre le nombre d'ennemis à spawn
+        // Get the number of enemies to spawn
         mobToSpawn = mobNumber;
 
-        // Tant que tout les ennemis n'ont pas été spawn
+        // While there is enemies to spawn
         while(mobToSpawn > 0)
         {
-            // Attend que le spawn actuel est effectué
+            // Start the spawn and wait for it to finish
             yield return new WaitUntil(() => Spawn());
 
-            // Attend un instant avant de lancer le spawn suivant
+            // Wait a moment before the next spawn
             yield return new WaitForSeconds(spawnCoolDown);
         }
 
-        // Attend que tout les ennemis ont été tués
+        // Wait that all the enemies have been killed
         yield return new WaitUntil(() => mobsActive.Count == 0);
 
-        // Indique que la vague est términée
+        // Call the end of the wave
         waveManager.EndWave();
     }
 
     [Server]
     bool Spawn()
     {
-        // Parcours tout les spawns d'ennemis depuis le spawn suivant le dernier spawn utilisé
+        // Go around all the spawns, starting by the last used
         for(int i = lastSpawnerIndex; i < spawners.Count; i++)
         {
-            // Si le spawn est actif
+            // If the spawn is active
             if(spawners[i].isActive)
             {
-                // Ajoute l'ennemis et le spawn
+                // Spawn the enemie and add it to the list of the active enemies
                 mobsActive.Add(spawners[i].Spawn(Random.Range(0, spawners[i].mobsArray.Length - 1)));
 
-                // Décremente le nombre d'ennemis à spawner
+                // Reduce the number of enemies needing to be spawnes
                 mobToSpawn--;
                 
-                // Si le tour des spawns a été fait
+                // If all the spawner have been used
                 if (i + 1 >= spawners.Count)
-                    // Réinitialise l'index à 0
+                    // Set the index to 0
                     lastSpawnerIndex = 0;
                 else
-                    // Sinon, prépare le passage suivant au spawn suivant
+                    // Otherwise, prepare the next spawn on the spawn following this one
                     lastSpawnerIndex = i + 1;
 
-                // Indique que le spawn est terminer
+                // Informe that the spawn is over
                 return true;
             }
         }
 
-        // Réinitialise l'index à 0
+        // Set the index to 0
         lastSpawnerIndex = 0;
 
-        // Indique que le spawn est terminer
+        // Informe that the spawn is over
         return true;
     }
 }

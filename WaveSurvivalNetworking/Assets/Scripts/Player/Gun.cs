@@ -49,31 +49,31 @@ public class Gun : NetworkBehaviour
     {
         if (!isLocalPlayer)            
             return;
-
-        // Oriente le fusil affiché chez les autres joueurs selon la rotation de la camera
+        
+        // Rotate the remote gun according to the local camera rotation
         gunRemote.transform.rotation = cameraTransform.rotation;
 
         hasNotShootSince += Time.deltaTime;
 
-        // Si le chargeur est vide ou si le joueur est en train de recharger, lance la fonction de recharge
+        // If the magazine is empty or the player is reloading, reload
         if ((magazineState <= 0 && (ammoState > 0 || maxAmmo == -1)) || isReloading)
             Reload();
 
         if (!isReloading)
         {
-            // Permet au joueur de recharger
+            // Allow the player to reload
             if (Input.GetKeyDown(KeyCode.R) && magazineState < magazineCapacity && (ammoState > 0 || maxAmmo == -1))
                 Reload();
 
-            // Permet au joueur de tirer
+            // Allow the player to shoot
             if (Input.GetButton("Fire1") && hasNotShootSince > shootCoolDown && magazineState > 0)
             {
                 hasNotShootSince = 0;
-
-                // Instancie l'effet du tir localement
+                
+                // Instanciate the local shoot effect
                 InstantiateMuzzleFlash(muzzleFlashLocal);
 
-                // Envoi la commande de tir au serveur avec la position et la direction du tir
+                // Send shoot command to the server with the origin and the direction
                 CmdFire(bulletSpawn.position, bulletSpawn.forward);
 
                 magazineState--;
@@ -86,26 +86,26 @@ public class Gun : NetworkBehaviour
     {
         RaycastHit hit;
 
-        // Prépare le raycast
+        // Prepare the raycast
         Ray ray = new Ray(origin, direction);
 
-        // Instancie l'effet de tir sur les autres clients
+        // Instanciate the remote shoot effect
         RpcFireEffect();
 
-        // Effectu le raycast et récupère l'objet touché
+        // Do the raycast and get the hitted object
         if (Physics.Raycast(ray, out hit, shootRange))
         {
-            // Tente de récuperé le comsant Health sur l'objet touché
+            // Try to get the Health component
             Health hitted = hit.transform.GetComponent<Health>();
 
             Debug.DrawLine(ray.origin, hit.transform.position, Color.red, 1f);
 
-            // Si le composant Health éxiste
+            // If it exists
             if (hitted != null)
             {
-                // Si il ne s'agit pas d'un joueur
+                // If it is not a player
                 if (hitted.type != Health.Type.PLAYER)
-                    // Inflige les dégats à la cible
+                    // Deal damage
                     hitted.TakeDamage(shootDamage);
             }
         }
@@ -126,28 +126,28 @@ public class Gun : NetworkBehaviour
 
         if (!reloadingSound.isPlaying)
             reloadingSound.Play();
-
-        // Vérifie que le temps de rechargement est arrivé à son terme avant de recharger l'arme
+        
+        // Check if the reloading action is finished
         if (isRelodingSince >= reloadingTime)
         {
             int magazineBulletCount = magazineCapacity;
-
-            // Effectu un ajustement supplémentaire si les munitions ne sont pas infinies
+            
+            // Do a specific adjustement if ammo are not unlimited
             if (maxAmmo > 0)
             {
-                // Défini le nombre de balle requise pour remplir complétement le magasin
+                // Define the number of bullets needed to completely fill the magazine
                 int ammoToRemove = magazineCapacity - magazineState;
-
-                // Si les munitions réstantes ne sont pas suffisantes pour remplir un chargeur complet
+                
+                // If the ammo left are not enough to fully fill the magazine
                 if (ammoState + magazineState < magazineCapacity)
-                    // Remplie le chargeur avec les munitions réstantes
+                    // Fill the magazine with the all the bullets left
                     magazineBulletCount = ammoState + magazineState;
-
-                // Soustrait le totale de balle utilisé pour remplir le magasin
+                
+                // Substract the total ammo used to fill the magazine
                 ammoState -= ammoToRemove;
             }
-
-            // Applique le nombre de balle dans le chargeur
+            
+            // Apply the bullet number to the magazine
             magazineState = magazineBulletCount;
 
             isReloading = false;
@@ -159,15 +159,15 @@ public class Gun : NetworkBehaviour
 
     void InstantiateMuzzleFlash(GameObject muzzleFlashReference)
     {
-        // Instancie l'effet de tir
+        // Instanciate the shooting effect
         GameObject muzzleFlash = Instantiate(muzzleFlashReference);
 
-        // Placee l'effet à la bonne position
+        // Place the effect on the right position
         muzzleFlash.transform.parent = muzzleFlashReference.transform.parent;
         muzzleFlash.transform.localPosition = muzzleFlashReference.transform.localPosition;
         muzzleFlash.transform.localRotation = muzzleFlashReference.transform.localRotation;
 
-        // Active l'effet
+        // Enable the effect
         muzzleFlash.SetActive(true);
     }
 }

@@ -18,7 +18,7 @@ public class WaveValues : NetworkBehaviour
     [SyncVar(hook = "OnWaveNumChanged")] public int waveNumber = 0;
     [SyncVar(hook = "OnMobsLeftChanged")] public int mobsLeft = 0;
     [SyncVar(hook = "OnPlayerAliveChanged")] public int playerAlive = 0;
-    // Statut du jeu, valeur : -1 => en cours; 0 => Défaite; 1 => Victoire
+    // Game state, values: -1 => in progress; 0 => defeat; 1 => victory
     [SyncVar(hook = "OnGameStatusChanged")] public int gameStatus = -1;
 
     public void AddPlayer(PlayerInfo player)
@@ -58,8 +58,9 @@ public class WaveValues : NetworkBehaviour
     {
         playerAlive = number;
 
-        // Vérifie qu'il reste des joueurs en vie, sinon place la partie dans l'état défaite
+        // Check if there is still a player alive
         if (playerAlive <= 0)
+            // Set the game as lost
             gameStatus = 0;
     }
 
